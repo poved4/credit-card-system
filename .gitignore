@@ -1,0 +1,6 @@
+emailapp/
+.vscode/
+.mvn/
+target/
+mvn*
+nb*
