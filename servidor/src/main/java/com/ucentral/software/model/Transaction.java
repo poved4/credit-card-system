@@ -14,10 +14,10 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Transaction {
 
-    private LocalDate date;
+  private LocalDate date;
 
-    private String description;
+  private String description;
 
-    private Double amount;
-    
+  private Double amount;
+
 }

@@ -1,9 +1,9 @@
 package com.ucentral.software.tcp;
 
-import com.ucentral.software.repository.ClientRepository;
-import com.ucentral.software.service.ClientService;
+import com.ucentral.software.repository.PersistenceService;
 import com.ucentral.software.service.FileService;
 import com.ucentral.software.ui.Menu;
+import com.ucentral.software.utils.ConfigLoader;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -11,72 +11,65 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server {
 
-    private final Integer PORT = 1415;
-    private static volatile Boolean isRunning;
+  private ServerSocket server;
+  private final AtomicInteger index = new AtomicInteger(0);
+  private static volatile Boolean isRunning = Boolean.FALSE;
 
-    private ServerSocket server;
-    private final AtomicInteger index = new AtomicInteger(0);
+  public void run(final Integer PORT) {
 
-    private final FileService sFile;
-    private final ClientRepository repository;
+    try {
 
-    public Server() {
-        isRunning = Boolean.FALSE;
-        this.sFile = new FileService();
-        this.repository = new ClientRepository(sFile);
-    }
+      server = new ServerSocket(PORT);
+      isRunning = Boolean.TRUE;
 
-    public void run() {
+      System.out.println("SERVER STARTED ON PORT: " + PORT);
 
-        try {
+      new Menu(this).init();
+      FileService sFile = new FileService();
+      ConfigLoader config = new ConfigLoader();
+      PersistenceService sPersistence = new PersistenceService(sFile, config);
 
-            server = new ServerSocket(PORT);
-            isRunning = Boolean.TRUE;
-            new Menu(this).init();
+      while (isRunning) {
 
-            System.out.println("SERVER STARTED ON PORT: " + PORT);
+        Socket clientSocket = server.accept();
 
-            while (isRunning) {
+        if (clientSocket.isConnected()) {
 
-                Socket clientSocket = server.accept();
+          ClientConnection client = new ClientConnection(
+                  index.incrementAndGet(),
+                  clientSocket,
+                  sPersistence
+          );
 
-                if (clientSocket.isConnected()) {
+          new Thread(client).start();
 
-                    ClientService client = new ClientService(
-                            index.incrementAndGet(),
-                            clientSocket,
-                            repository
-                    );
-
-                    new Thread(client).start();
-
-                }
-
-            }
-
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-        } finally {
-            stop();
         }
 
+      }
+
+    } catch (Exception e) {
+      System.err.println("SERVER STARTUP ERROR. " + e.getMessage());
+    } finally {
+      stop();
     }
 
-    public void stop() {
+  }
 
-        try {
+  public void stop() {
 
-            isRunning = Boolean.FALSE;
+    try {
 
-            if (server != null && !server.isClosed()) {
-                server.close();
-                System.out.println("SERVER STOPPED.");
-            }
+      isRunning = Boolean.FALSE;
 
-        } catch (IOException e) {
-            System.err.println("ERROR CLOSING SERVER: " + e.getMessage());
-        }
+      if (server != null && !server.isClosed()) {
+        server.close();
+        System.out.println("SERVER STOPPED.");
+      }
 
+    } catch (IOException e) {
+      System.err.println("ERROR CLOSING SERVER: " + e.getMessage());
     }
+
+  }
 
 }

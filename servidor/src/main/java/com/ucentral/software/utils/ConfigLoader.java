@@ -1,4 +1,4 @@
-package com.ucentral.software;
+package com.ucentral.software.utils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,23 +31,20 @@ public class ConfigLoader {
 
   }
 
-  public Long getTimeOut() {
-    String prop = properties.getProperty("monitoring.instances.time-out");
-    return Long.valueOf(prop);
+  public String accountFile() {
+    return properties.getProperty("database.account");
   }
 
-  public Integer getDefaultPort() {
-    String prop = properties.getProperty("monitoring.instances.default-port");
-    return Integer.valueOf(prop);
+  public String transactionsFile() {
+    return properties.getProperty("database.transactions");
   }
 
-  public Integer getMaxInstances() {
-    String prop = properties.getProperty("monitoring.instances.maximum");
-    return Integer.valueOf(prop);
+  public String creditCardFile() {
+    return properties.getProperty("database.creditCard");
   }
 
-  public String getJarPath() {
-    return properties.getProperty("monitoring.instances.jar-path");
+  public String sessionFile() {
+    return properties.getProperty("database.session");
   }
 
 }
